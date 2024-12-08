@@ -3,7 +3,7 @@ from typing import Any, Literal
 import cv2
 from cv2.typing import Rect
 import numpy as np
-from .constants import IMAGE_SHAPE
+from constants import IMAGE_SHAPE
 
 DIR_PATH = os.path.dirname(__file__)
 
@@ -19,12 +19,18 @@ def crop_face(
     Returns state of images, and the crop image, if it's unique.
 
     Parameters:
-    - image: The image need to be cropped
-    - scaleFactor:
-    - minNeighbors:
-    -----
+    -----------
+    image:
+        The image need to be cropped
+
+    scaleFactor:
+
+    minNeighbors:
+
     Returns:
+    --------
         A string represents the state of images, which can be "none", "one", "many"
+
         0 if not "one", a np.ndarray represents the image if "one"
     """
     face_cascade = cv2.CascadeClassifier(
