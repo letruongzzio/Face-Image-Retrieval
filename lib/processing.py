@@ -1,9 +1,12 @@
 import os
-from typing import Any, Literal
+from typing import Literal
+
+import PIL
+import PIL.Image
 import cv2
 from cv2.typing import Rect
 import numpy as np
-from constants import IMAGE_SHAPE
+from constants import IMAGE_SHAPE, IMAGENET_IMAGE_SIZE
 
 DIR_PATH = os.path.dirname(__file__)
 
@@ -31,7 +34,7 @@ def crop_face(
     --------
         A string represents the state of images, which can be "none", "one", "many"
 
-        0 if not "one", a np.ndarray represents the image if "one"
+        0 if not "one", a np.ndarray represents the face if "one"
     """
     face_cascade = cv2.CascadeClassifier(
         os.path.join(DIR_PATH, "haarcascade_frontalface_default.xml")
@@ -73,4 +76,6 @@ def face_coordination(image, face_coord: Rect) -> np.ndarray:
     if x - 5 >= 0 and x + w + 5 < IMAGE_SHAPE[1]:
         c = 5
     face = image[y - a : y + h + b, x - c : x + w + c]
-    return face
+    face = PIL.Image.fromarray(face)
+    face = face.resize(IMAGENET_IMAGE_SIZE, PIL.Image.Resampling.LANCZOS)
+    return np.array(face)
