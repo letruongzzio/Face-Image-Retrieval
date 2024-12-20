@@ -1,4 +1,4 @@
-import numpy as np
+import numpy
 import torch
 import os
 from sklearn.neighbors import KDTree
@@ -11,8 +11,6 @@ PARENT_DIRNAME = os.path.expanduser("~/image-processing-project/")
 IMAGE_DIR = os.path.join(PARENT_DIRNAME, "data/img_align_celeba/")
 STORAGE_DATA_DIRNAME = os.path.join(PARENT_DIRNAME, "fine_tuning/data_for_fine_tuning")
 MODEL_DIR = os.path.join(PARENT_DIRNAME, "fine_tuning/models")
-FULL_EMBEDDINGS_PATH = os.path.join(STORAGE_DATA_DIRNAME, "full_embeddings.pth")
-FULL_LABELS_PATH = os.path.join(STORAGE_DATA_DIRNAME, "full_labels.pth")
 IMAGE_SIZE = 218
 
 # Define the image transformation
@@ -64,10 +62,8 @@ def retrieve_top_k(query_embedding, full_embeddings, full_labels, top_k):
 
 def query_and_plot_images(
     query_image_path, model="mobilenet_v2",
-    image_dir=IMAGE_DIR, 
+    image_dir=IMAGE_DIR,
     top_k=5,
-    full_embeddings_path=FULL_EMBEDDINGS_PATH,
-    full_labels_path=FULL_LABELS_PATH, 
     device="cuda"
 ):
     """
@@ -76,21 +72,27 @@ def query_and_plot_images(
     Args:
         - model: The model used to compute embeddings.
         - query_image_path: Path to the query image.
-        - full_embeddings_path: Path to the file containing precomputed embeddings.
-        - full_labels_path: Path to the file containing labels for embeddings.
         - image_dir: Directory containing the dataset images.
         - top_k: Number of top similar images to retrieve.
         - device: Device to run the model.
     """
+    print("Loading precomputed embeddings and labels...")
+
+    full_embeddings_path = ""
+    full_labels_path = ""
+
     if model == "mobilenet_v2":
         model = RetrievalModel(backbone="mobilenet_v2", embedding_dim=128).to(device)
         model.load_state_dict(torch.load(os.path.join(MODEL_DIR, "mobilenet_v2_identity.pth")))
+        full_embeddings_path = os.path.join(STORAGE_DATA_DIRNAME, "full_embeddings_mobilenet.pth")
+        full_labels_path = os.path.join(STORAGE_DATA_DIRNAME, "full_labels_mobilenet.pth")
 
     elif model == "resnet50":
-        model = RetrievalModel(backbone="resnet50", embedding_dim=256).to(device)
+        model = RetrievalModel(backbone="resnet50", embedding_dim=128).to(device)
         model.load_state_dict(torch.load(os.path.join(MODEL_DIR, "resnet50_identity.pth")))
+        full_embeddings_path = os.path.join(STORAGE_DATA_DIRNAME, "full_embeddings_resnet.pth")
+        full_labels_path = os.path.join(STORAGE_DATA_DIRNAME, "full_labels_resnet.pth")
 
-    print("Loading precomputed embeddings and labels...")
     full_embeddings = torch.load(full_embeddings_path)
     full_labels = torch.load(full_labels_path)
 
