@@ -38,6 +38,8 @@ def fine_tune_with_identity(model, dataloader, optimizer, num_epochs, device, nu
     for epoch in range(num_epochs):
         running_loss = 0.0
         for batch in tqdm(dataloader, desc=f"Epoch {epoch+1}/{num_epochs}"):
+            if batch is None:
+                continue
             anchor, positive, negative = batch[:3]
             anchor, positive, negative = anchor.to(device), positive.to(device), negative.to(device)
 
