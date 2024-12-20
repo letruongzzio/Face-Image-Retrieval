@@ -3,6 +3,12 @@ from PIL import Image
 from torch.utils.data import Dataset
 import torch
 import torch.nn.functional as F
+import random
+
+PARENT_DIRNAME = os.path.expanduser("~/image-processing-project/")
+IMAGE_DIR = os.path.join(PARENT_DIRNAME, "data/img_align_celeba/")
+
+# IMAGE_DIR = "/kaggle/input/imageceleba/img_align_celeba"
 
 class TripletDataset(Dataset):
     """
@@ -185,14 +191,26 @@ class TripletDataset(Dataset):
             anchor = Image.open(os.path.join(self.image_dir, anchor_path)).convert("RGB")
             positive = Image.open(os.path.join(self.image_dir, positive_path)).convert("RGB")
             negative = Image.open(os.path.join(self.image_dir, negative_path)).convert("RGB")
-        except FileNotFoundError:
-            # print(f"Skipping triplet {idx} due to missing image")
-            return None
 
-        if self.transform:
-            anchor = self.transform(anchor)
-            positive = self.transform(positive)
-            negative = self.transform(negative)
+            if self.transform:
+                anchor = self.transform(anchor)
+                positive = self.transform(positive)
+                negative = self.transform(negative)
+        except FileNotFoundError:
+            fallback_images = [os.path.join(IMAGE_DIR, f) for f in os.listdir(IMAGE_DIR) if f.lower().endswith(('png', 'jpg', 'jpeg'))]
+            if len(fallback_images) == 0:
+                default_tensor = torch.zeros((3, 218, 218))
+                return default_tensor, default_tensor, default_tensor
+
+            fallback_path = random.choice(fallback_images)
+            fallback_image = Image.open(fallback_path).convert('RGB')
+            fallback_tensor = self.transform(fallback_image)
+
+            noise_scale = 0.05
+            noise = torch.randn_like(fallback_tensor) * noise_scale
+            fallback_tensor_noisy = fallback_tensor + noise
+
+            return fallback_tensor, fallback_tensor, fallback_tensor_noisy
 
         return anchor, positive, negative
 
@@ -316,26 +334,9 @@ class QueryDataset(Dataset):
         return query_image, query_image_path
 
 def collate_fn(batch):
-    """
-    Collate function for handling None values in a batch.
-
-    This function is used as the collate_fn argument in PyTorch DataLoader to handle cases
-    where the __getitem__ method of a dataset returns None for certain samples. It filters
-    out the None values from the batch before passing it to the default collate function.
-
-    Args:
-        batch (List): A list of samples returned by the dataset's __getitem__ method.
-
-    Returns:
-        Any: The processed batch after filtering out None values.
-
-    Example:
-        >>> dataset = MyDataset(...)
-        >>> dataloader = DataLoader(dataset, batch_size=32, collate_fn=collate_fn)
-    """
     batch = [x for x in batch if x is not None]
     if len(batch) == 0:
-        return None
+        raise ValueError("All samples in the batch are invalid.")
     return torch.utils.data.dataloader.default_collate(batch)
 
 def triplet_loss(anchor, positive, negative, margin=1.0):
