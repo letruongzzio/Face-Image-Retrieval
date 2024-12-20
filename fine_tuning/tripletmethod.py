@@ -315,6 +315,29 @@ class QueryDataset(Dataset):
             query_image = self.transform(query_image)
         return query_image, query_image_path
 
+def collate_fn(batch):
+    """
+    Collate function for handling None values in a batch.
+
+    This function is used as the collate_fn argument in PyTorch DataLoader to handle cases
+    where the __getitem__ method of a dataset returns None for certain samples. It filters
+    out the None values from the batch before passing it to the default collate function.
+
+    Args:
+        batch (List): A list of samples returned by the dataset's __getitem__ method.
+
+    Returns:
+        Any: The processed batch after filtering out None values.
+
+    Example:
+        >>> dataset = MyDataset(...)
+        >>> dataloader = DataLoader(dataset, batch_size=32, collate_fn=collate_fn)
+    """
+    batch = [x for x in batch if x is not None]
+    if len(batch) == 0:
+        return None
+    return torch.utils.data.dataloader.default_collate(batch)
+
 def triplet_loss(anchor, positive, negative, margin=1.0):
     """
     Calculates the triplet loss function.
