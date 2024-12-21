@@ -1,78 +1,82 @@
-import numpy
-import torch
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg # `mpimg.imread` is used to read images
 import os
 from sklearn.neighbors import KDTree
+import torch
+from torchvision.transforms import transforms
 from PIL import Image
-from torchvision import transforms
 from retrievalmodels import RetrievalModel
-from plotretrievedimg import plot_retrieved_images
+import numpy as np
 
 PARENT_DIRNAME = os.path.expanduser("~/image-processing-project/")
-IMAGE_DIR = os.path.join(PARENT_DIRNAME, "data/img_align_celeba/")
 STORAGE_DATA_DIRNAME = os.path.join(PARENT_DIRNAME, "fine_tuning/data_for_fine_tuning")
 MODEL_DIR = os.path.join(PARENT_DIRNAME, "fine_tuning/models")
-IMAGE_SIZE = 218
 
-# Define the image transformation
-transform = transforms.Compose([
-    transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-])
-
-def compute_single_embedding(model, image_path, transformer=transform, device="cuda"):
+def plot_retrieved_images(query_image_path, gallery_image_paths, distances, top_k):
     """
-    Computes the embedding for a single image.
+    Plot the query image on the leftmost side and the top-K retrieved images on the right.
+    The query image is centered vertically relative to the retrieved images.
 
     Args:
-        - model: The model used to compute embeddings.
-        - image_path: Path to the query image.
-        - transform: Transformation to apply to the image.
-        - device: Device to run the model.
-
-    Returns:
-        - embedding: Embedding of the image.
+        - query_image_path: Path to the query image.
+        - gallery_image_paths: List of gallery image paths.
+        - distances: List of distances for the retrieved images.
+        - top_k: Number of retrieved images to display.
     """
-    model.eval()
-    with torch.no_grad():
-        image = Image.open(image_path).convert("RGB")
-        image = transformer(image).unsqueeze(0).to(device)
-        embedding = model(image).cpu().numpy()
-    return embedding
+    if not gallery_image_paths:
+        print("No images to display. Gallery image paths are empty.")
+        return
 
-def retrieve_top_k(query_embedding, full_embeddings, full_labels, top_k):
-    """
-    Retrieve the top-K most similar images to the query embedding using KDTree.
+    # Adjust the number of gallery images to match top_k
+    gallery_image_paths = gallery_image_paths[:top_k]
+    distances = distances[:top_k]
 
-    Args:
-        - query_embedding: Embedding of the query image.
-        - full_embeddings: Precomputed embeddings for the entire dataset.
-        - full_labels: Labels corresponding to the embeddings.
-        - top_k: Number of top similar images to retrieve.
+    # Calculate the number of rows and columns for gallery images
+    num_columns = 3
+    num_rows = (top_k + num_columns - 1) // num_columns
 
-    Returns:
-        - top_k_indices: Indices of the top-K most similar images.
-        - top_k_labels: Labels of the top-K most similar images.
-    """
-    kdtree = KDTree(full_embeddings)
-    _, indices = kdtree.query(query_embedding.reshape(1, -1), k=top_k)
-    top_k_indices = indices[0]
-    top_k_labels = [full_labels[i] for i in top_k_indices]
-    return top_k_indices, top_k_labels
+    # Create a figure for the plot
+    fig, axs = plt.subplots(num_rows, num_columns + 1, figsize=(20, num_rows * 5), gridspec_kw={"width_ratios": [0.8] + [1] * num_columns})
+    fig.subplots_adjust(wspace=0.4, hspace=0.4)
+
+    # Plot the query image on the leftmost column, vertically centered
+    query_img = mpimg.imread(query_image_path)
+    query_row_start = (num_rows - 1) // 2
+    query_row_end = query_row_start + 1
+
+    for row in range(num_rows):
+        if query_row_start <= row < query_row_end:
+            axs[row, 0].imshow(query_img)
+            axs[row, 0].set_title("Query Image", fontsize=14, fontweight="bold", color="darkblue")
+            axs[row, 0].axis("off")
+        else:
+            axs[row, 0].axis("off")
+
+    # Plot the retrieved images on the right
+    for idx, gallery_image_path in enumerate(gallery_image_paths):
+        row, col = divmod(idx, num_columns)
+        ax = axs[row, col + 1]  # Fill right columns with retrieved images
+        gallery_img = mpimg.imread(gallery_image_path)
+        ax.imshow(gallery_img)
+        ax.set_title(f"Rank {idx + 1}\nDistance: {distances[idx]:.2f}", fontsize=10, color="green")
+        ax.axis("off")
+
+    # Hide unused subplots for retrieved images
+    for idx in range(len(gallery_image_paths), num_rows * num_columns):
+        row, col = divmod(idx, num_columns)
+        axs[row, col + 1].axis("off")
+
+    plt.show()
 
 def query_and_plot_images(
-    query_image_path, model="mobilenet_v2",
-    image_dir=IMAGE_DIR,
-    top_k=5,
-    device="cuda"
+    query_image_path, model, top_k=5, device="cuda"
 ):
     """
     Query an image and plot the top-K most similar images from the dataset.
 
     Args:
-        - model: The model used to compute embeddings.
         - query_image_path: Path to the query image.
-        - image_dir: Directory containing the dataset images.
+        - model: The model used to compute embeddings.
         - top_k: Number of top similar images to retrieve.
         - device: Device to run the model.
     """
@@ -96,14 +100,29 @@ def query_and_plot_images(
     full_embeddings = torch.load(full_embeddings_path)
     full_labels = torch.load(full_labels_path)
 
-    print("Computing embedding for the query image...")
-    query_embedding = compute_single_embedding(model, query_image_path, transform, device)
+    # Define the image transformation
+    transform = transforms.Compose([
+        transforms.Resize((218, 218)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
 
-    print("Retrieving top-K similar images...")
-    _, top_k_labels = retrieve_top_k(query_embedding, full_embeddings, full_labels, top_k)
+    # Compute the query embedding
+    model.eval()
+    with torch.no_grad():
+        image = Image.open(query_image_path).convert("RGB")
+        image = transform(image).unsqueeze(0).to(device)
+        query_embedding = model(image).cpu().numpy()
+
+    # Query the KDTree for the top-K nearest neighbors
+    kdtree = KDTree(full_embeddings)
+    distances, indices = kdtree.query(query_embedding.reshape(1, -1), k=top_k)
+    top_k_indices = indices[0]
 
     # Construct the paths for the top-K retrieved images
-    gallery_image_paths = [os.path.join(image_dir, label) for label in top_k_labels]
+    gallery_image_paths = [full_labels[i] for i in top_k_indices]
 
-    print("Plotting the query image and retrieved images...")
-    plot_retrieved_images(query_image_path, gallery_image_paths, top_k=top_k)
+    # Plot the query image and retrieved images
+    plot_retrieved_images(query_image_path, gallery_image_paths, distances[0], top_k=top_k)
+
+    return gallery_image_paths, distances[0]
