@@ -24,19 +24,28 @@ pip install -r requirements.txt
    ~/image-processing-project/fine_tuning/data_for_fine_tuning/
    ```
 
+4. In addition, you should install full data for fine-tuning from [this link](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) and place it into:
+   ```
+   ~/image-processing-project/data/
+   ```
+
 ### Directory Structure
 After setup, your project directory should look like this:
 ```
 image-processing-project/
 ├── data/
-│   ├── img_align_celeba/
 ├── fine_tuning/
 │   ├── data_for_fine_tuning/
 │   │   ├── full_embeddings_mobilenet.pth
-│   │   ├── full_labels_mobilenet.pth
+│   │   ├── full_embeddings_resnet.pth
 │   │   ├── ...
 │   ├── models/
 │       ├── mobilenet_v2_identity.pth
+│       ├── resnet50_identity.pth
+│   ├── finetune_data_processing_example.ipynb
+│   ├── finetune_models_example.ipynb
+│   ├── finetune_query_evaluate_example.ipynb
+│   ├── *.py
 ```
 
 ## Scripts and Notebooks
@@ -70,17 +79,12 @@ image-processing-project/
   - Uses triplet datasets for optimizing embedding spaces.
 - **Usage**: Fine-tune the model to improve retrieval performance.
 
-#### 5. `plotretrievedimg.py`
-- **Purpose**: Visualizes query images alongside top-K retrieved images.
-- **Key Functionality**: Creates clean and intuitive plots for visualization.
-- **Usage**: Import this module to visualize retrieval results.
-
-#### 6. `query_face_img.py`
+#### 5. `query_face_img.py`
 - **Purpose**: Queries an image and retrieves the most similar images.
 - **Key Functionality**:
   - Loads pre-trained embeddings and models.
   - Computes query embeddings and retrieves top-K matches using KDTree.
-  - Visualizes results with the `plotretrievedimg.py` module.
+  - Visualizes results with the query image and retrieved images.
 - **Usage**: Adjust the script with the desired query image and model.
 
 #### 7. `retrievalmodels.py`
@@ -112,8 +116,8 @@ image-processing-project/
 - **Key Functionality**: Walks through triplet generation and data preparation steps.
 - **Usage**: Reference this notebook to set up your data pipeline.
 
-#### 2. `finetune_mobilenet_example.ipynb`
-- **Purpose**: Provides an example of fine-tuning MobileNetV2.
+#### 2. `finetune_models_example.ipynb`
+- **Purpose**: Provides an example of model fine-tuning.
 - **Key Functionality**: Demonstrates model training using triplet loss.
 - **Usage**: Modify and execute this notebook for your fine-tuning tasks.
 
@@ -127,6 +131,7 @@ image-processing-project/
 ## Notes
 - **Data Format**: Ensure that your dataset and embeddings follow the specified directory structure.
 - **Custom Pipeline**: This project does not include a complete pipeline. Use the provided scripts and notebooks as building blocks for your own workflows.
+- **Model Selection**: Choose the appropriate model for your task based on the desired trade-offs between speed and accuracy.
 
 ## Contributions
 Contributions are welcome! Please feel free to submit issues or pull requests for improvements.
