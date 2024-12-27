@@ -1,5 +1,5 @@
 import streamlit as st
-import io
+import os
 import time
 import PIL.Image
 import sys
@@ -22,7 +22,7 @@ def save_image(img):
 
 def process_image(image_path):
     image = cv2.imread(image_path)
-    state, cropped_image = crop_face(image, 1.12, 12)
+    state, cropped_image = crop_face(image, 1.12, 16)
     if state == "one":
         cv2.imwrite(image_path, cropped_image)
         return img_path
@@ -82,36 +82,21 @@ with col2:
         else:
             st.success("Face cropped successfully")
 
-        
-
-if st.button('Review Image (Cropped)'):
-    if img is not None:
-        img = cv2.imread(img_path,cv2.IMREAD_COLOR)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        st.image(img,output_format='PNG')
-        # if img_path is not None:
-        #     img = cv2.imread(img_path, cv2.IMREAD_COLOR)
-        #     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        #     st.image(img, output_format='PNG')
-        # else:
-        #     st.warning("Please provide an image first")
-        # st.write(f"Size: {img.size} bytes")
-        # img_file = io.BytesIO(cv2.imencode('.png', img)[1])
-        # image = PIL.Image.open(img_file)
-        # st.write("Image dimensions:", image.size)
-        # st.write("Image mode:", image.mode)
-        # if method == 'Upload a picture':
-        #     st.write(f"Filename: {img_path}")
-        #     st.image(img_path, caption='Uploaded Image', width=200, use_column_width=True)
-    else:
-        st.warning("Please provide an image first")
-
+    if st.button('Review Image (Cropped)'):
+        if img is not None:
+            img = cv2.imread(img_path,cv2.IMREAD_COLOR)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            st.image(img,output_format='PNG')
+            file_size = os.path.getsize(img_path)
+            st.write(f"Size: {file_size} bytes")
+            st.write("Image dimensions:", img.shape)
+        else:
+            st.warning("Please provide an image first")
 
 st.subheader("Selecting Model")
 col1, col2 = st.columns([1, 3])
 with col1:
   model = st.selectbox('Select Model',options=['MobileNet_V2','ResNet50'])
   model = model.lower()
-
 st.subheader("Output")
-
+fa
