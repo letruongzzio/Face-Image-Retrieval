@@ -1,7 +1,36 @@
 import streamlit as st
 import io
+import time
 import PIL.Image
+import sys
+import cv2
+sys.path.append('/home/tiamo/Documents/code/Digital Image Processing/image-processing-project/lib')
+from processing import crop_face
 
+
+def save_image(img):
+    img_folder = '/home/tiamo/Documents/code/Digital Image Processing/image-processing-project/img'
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+    img_path = f"{img_folder}/{timestamp}.png"
+
+    with open(img_path, 'wb') as f:
+        f.write(img.getvalue())
+        st.success(f"Image saved to {img_path}")
+    return img_path
+
+
+
+def process_image(image_path):
+    image = cv2.imread(image_path)
+    state, cropped_image = crop_face(image, 1.12, 12)
+    if state == "one":
+        cv2.imwrite(image_path, cropped_image)
+        return img_path
+    else:
+        return None
+
+
+# Design the layout of the Streamlit app
 st.set_page_config(page_title="Image Retrieval Program", page_icon=":shark:", layout="wide", initial_sidebar_state='auto')
 
 # hide the part of the code, as this is just for adding some custom CSS styling but not a part of the main idea 
@@ -38,29 +67,51 @@ with col1:
   method = st.radio('Select Input method',options=['Take a picture','Upload a picture'])
   
 with col2:
-  if method == 'Take a picture':
-    enable = st.checkbox('Enable Camera')
-    img = st.camera_input('Take a picture',disabled= not enable)
-  else:
-    img = st.file_uploader('Upload a picture')
 
-  if st.button('Review Image'):
-    if img is not None:
-      st.write("Image Details:")
-      st.write(f"Format: {img.type}")
-      st.write(f"Size: {img.size} bytes")
-      img_file = io.BytesIO(img.getvalue())
-      image = PIL.Image.open(img_file)
-      st.write("Image dimensions:", image.size)
-      st.write("Image mode:", image.mode)
-      if method == 'Upload a picture':
-        st.write(f"Filename: {img.name}")
-      st.image(img, caption='Uploaded Image', width=200,use_container_width=True)
+    if method == 'Take a picture':
+        enable = st.checkbox('Enable Camera')
+        img = st.camera_input('Take a picture',disabled= not enable)
     else:
-      st.warning("Please provide an image first")
+        img = st.file_uploader('Upload a picture')
+
+    if img is not None:
+        img_path = save_image(img) #Save ori image
+        img_path = process_image(img_path)
+        if img_path is None:
+            st.warning("Please take another image")
+        else:
+            st.success("Face cropped successfully")
+
+        
+
+if st.button('Review Image (Cropped)'):
+    if img is not None:
+        img = cv2.imread(img_path,cv2.IMREAD_COLOR)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        st.image(img,output_format='PNG')
+        # if img_path is not None:
+        #     img = cv2.imread(img_path, cv2.IMREAD_COLOR)
+        #     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        #     st.image(img, output_format='PNG')
+        # else:
+        #     st.warning("Please provide an image first")
+        # st.write(f"Size: {img.size} bytes")
+        # img_file = io.BytesIO(cv2.imencode('.png', img)[1])
+        # image = PIL.Image.open(img_file)
+        # st.write("Image dimensions:", image.size)
+        # st.write("Image mode:", image.mode)
+        # if method == 'Upload a picture':
+        #     st.write(f"Filename: {img_path}")
+        #     st.image(img_path, caption='Uploaded Image', width=200, use_column_width=True)
+    else:
+        st.warning("Please provide an image first")
+
+
 st.subheader("Selecting Model")
 col1, col2 = st.columns([1, 3])
 with col1:
-  model = st.selectbox('Select Model',options=['VGG16','ResNet50','InceptionV3'])
+  model = st.selectbox('Select Model',options=['MobileNet_V2','ResNet50'])
+  model = model.lower()
 
 st.subheader("Output")
+
