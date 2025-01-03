@@ -94,6 +94,8 @@ with col2:
         else:
             st.warning("Please provide an image first")
 
+img_path = os.path.join(PARENT_DIRNAME, img_path)
+
 st.subheader("Selecting Model")
 col1, col2 = st.columns([1, 3])
 with col1:
@@ -133,11 +135,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #     model.load_state_dict(torch.load(os.path.join(MODEL_DIR, "mobilenet_v2_identity.pth")))
     
 gallery_image_paths, distances = query_and_plot_images(
-    query_image_path=os.path.join(IMAGE_DIR, "000611.jpg"),
+    query_image_path=img_path,
     model=model_name,
-    top_k=9,
-    device=device
+    top_k=9
 )
 
 print("Gallery image paths: ", gallery_image_paths)
 print("Distances: ", distances)
+
