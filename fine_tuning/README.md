@@ -12,21 +12,16 @@ pip install -r requirements.txt
 
 ## Getting Started
 ### Data Preparation
-1. Download the CelebA dataset from [this link](https://www.kaggle.com/datasets/phtrngl/imageceleba) and extract it.
+1. Download the CelebA dataset from [this link](https://www.kaggle.com/datasets/daoxuantan/my-celeba) and extract it.
 2. Place the extracted images into the following directory:
    ```
-   ~/image-processing-project/data/img_align_celeba/
+   ~/image-processing-project/data/
    ```
    Create the folder structure if it does not exist.
 
 3. Pre-trained embeddings and labels for the dataset are available [here](https://drive.google.com/drive/u/3/folders/1ut9KtKUNWa3krGMpkcFLKpsi_yxESeNo). Download and place them into:
    ```
    ~/image-processing-project/fine_tuning/data_for_fine_tuning/
-   ```
-
-4. In addition, you should install full data for fine-tuning from [this link](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) and place it into:
-   ```
-   ~/image-processing-project/data/
    ```
 
 ### Directory Structure
