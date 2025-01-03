@@ -19,7 +19,7 @@ pip install -r requirements.txt
    ```
    Create the folder structure if it does not exist.
 
-3. Pre-trained embeddings and labels for the dataset are available [here](https://drive.google.com/drive/u/3/folders/1ut9KtKUNWa3krGMpkcFLKpsi_yxESeNo). Download and place them into:
+3. Pre-trained embeddings for the dataset are available [here](https://drive.google.com/drive/u/3/folders/1ut9KtKUNWa3krGMpkcFLKpsi_yxESeNo). Download and place them into:
    ```
    ~/image-processing-project/fine_tuning/data_for_fine_tuning/
    ```
