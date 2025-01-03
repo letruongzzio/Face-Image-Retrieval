@@ -4,12 +4,13 @@ import time
 import PIL.Image
 import sys
 import cv2
-sys.path.append('/home/tiamo/Documents/code/Digital Image Processing/image-processing-project/lib')
+PARENT_DIRNAME = os.path.expanduser("~/image-processing-project/")
+sys.path.append(os.path.join(PARENT_DIRNAME, "lib/"))
 from processing import crop_face
 
 
 def save_image(img):
-    img_folder = '/home/tiamo/Documents/code/Digital Image Processing/image-processing-project/img'
+    img_folder = os.path.join(PARENT_DIRNAME, "img")
     timestamp = time.strftime("%Y%m%d-%H%M%S")
     img_path = f"{img_folder}/{timestamp}.png"
 
@@ -96,7 +97,47 @@ with col2:
 st.subheader("Selecting Model")
 col1, col2 = st.columns([1, 3])
 with col1:
-  model = st.selectbox('Select Model',options=['MobileNet_V2','ResNet50'])
-  model = model.lower()
+  model_name = st.selectbox('Select Model',options=['MobileNet_V2','ResNet50'])
+  model_name = model_name.lower()
+
+
 st.subheader("Output")
-fa
+
+import torch
+
+IMAGE_DIR = os.path.join(PARENT_DIRNAME, "data/img_align_celeba/")
+STORAGE_DATA_DIRNAME = os.path.join(PARENT_DIRNAME, "fine_tuning/data_for_fine_tuning")
+MODEL_DIR = os.path.join(PARENT_DIRNAME, "fine_tuning/models")
+
+print(PARENT_DIRNAME)
+
+import sys
+
+sys.path.append(os.path.join(PARENT_DIRNAME, "fine_tuning/"))
+from retrievalmodels import RetrievalModel
+from imgretrievaltest import run_evaluation_pipeline_with_attributes
+from query_face_img import query_and_plot_images
+
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# train_loader = torch.load(os.path.join(STORAGE_DATA_DIRNAME, "train_loader.pth"))
+# query_loader = torch.load(os.path.join(STORAGE_DATA_DIRNAME, "query_loader.pth"))
+# gallery_loader = torch.load(os.path.join(STORAGE_DATA_DIRNAME, "gallery_loader.pth"))
+
+# model = RetrievalModel(backbone=model_name, embedding_dim=128).to(device)
+
+# if model_name == "resnet50":
+#     model.load_state_dict(torch.load(os.path.join(MODEL_DIR, "resnet50_identity.pth")))
+# else:
+#     model.load_state_dict(torch.load(os.path.join(MODEL_DIR, "mobilenet_v2_identity.pth")))
+    
+gallery_image_paths, distances = query_and_plot_images(
+    query_image_path=os.path.join(IMAGE_DIR, "000611.jpg"),
+    model=model_name,
+    top_k=9,
+    device=device
+)
+
+print("Gallery image paths: ", gallery_image_paths)
+print("Distances: ", distances)
