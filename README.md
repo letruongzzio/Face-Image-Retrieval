@@ -96,13 +96,7 @@ Upload or take a picture to retrieve similar images from the dataset.
 
 The performance of the ResNet-50 and MobileNet-V2 models was evaluated on the face image retrieval task, focusing on **accuracy**, **mean distance**, and **query time**. The comparison reveals significant improvements in retrieval quality and computational efficiency after fine-tuning.
 
-1. **Before Fine-Tuning:**
-
-![Before Fine-Tuning](./image/tab_before_ft.png)
-
-2. **After Fine-Tuning:**
-
-![After Fine-Tuning](./image/tab_after_ft.png)
+aaaaaaaaaaaaaaaaaaaaaâââ
 
 **Insights on Model Suitability:**
    - **ResNet-50** delivers higher retrieval accuracy and more refined embedding spaces but at the cost of higher query times, especially for larger \( k \) values.
