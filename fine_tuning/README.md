@@ -1,4 +1,4 @@
-# Fine Tuning - Image Processing and Face Retrieval Project
+# Fine Tuning for Face Image Retrieval
 
 ## Overview
 This section demonstrates a pipeline for face image retrieval using the CelebA dataset. It includes modules for embedding computation, model fine-tuning, triplet data generation, and retrieval evaluation. Example notebooks showcase training and inference processes, and pre-trained embeddings and models are provided for user convenience.
@@ -24,6 +24,8 @@ pip install -r requirements.txt
    ~/image-processing-project/fine_tuning/data_for_fine_tuning/
    ```
 
+Although I have saved almost all processed data in the repository, you should re-run the scripts to ensure that the data is up-to-date.
+
 ### Directory Structure
 After setup, your project directory should look like this:
 ```
@@ -37,9 +39,6 @@ image-processing-project/
 │   ├── models/
 │       ├── mobilenet_v2_identity.pth
 │       ├── resnet50_identity.pth
-│   ├── finetune_data_processing_example.ipynb
-│   ├── finetune_models_example.ipynb
-│   ├── finetune_query_evaluate_example.ipynb
 │   ├── *.py
 ```
 
@@ -54,12 +53,12 @@ image-processing-project/
   - Handles missing or corrupt images gracefully.
 - **Usage**: Modify the script to use your model, set the device (e.g., `cuda` or `cpu`), and run it to generate embeddings for retrieval tasks.
 
-#### 2. `dropout.py`
+#### 2. `drop_out.py`
 - **Purpose**: Applies random dropout to image tensors as a regularization technique.
 - **Key Functionality**: Implements PyTorch's `nn.Dropout` for image augmentation during training.
 - **Usage**: Can be imported into your training pipeline for enhanced model generalization.
 
-#### 3. `imgretrievaltest.py`
+#### 3. `img_retrieval_test.py`
 - **Purpose**: Tests retrieval accuracy using pre-computed embeddings and KDTree for nearest neighbor search.
 - **Key Functionality**:
   - Computes query and gallery embeddings.
@@ -67,7 +66,7 @@ image-processing-project/
   - Calculates Precision@K, Recall@K, F1, and Accuracy.
 - **Usage**: Run the script to evaluate the retrieval performance of your model.
 
-#### 4. `modelfinetuning.py`
+#### 4. `model_finetuning.py`
 - **Purpose**: Fine-tunes pre-trained models using triplet loss.
 - **Key Functionality**:
   - Supports MobileNetV2 and ResNet50 backbones.
@@ -82,21 +81,21 @@ image-processing-project/
   - Visualizes results with the query image and retrieved images.
 - **Usage**: Adjust the script with the desired query image and model.
 
-#### 7. `retrievalmodels.py`
+#### 7. `retrieval_models.py`
 - **Purpose**: Defines the neural network models for embedding generation.
 - **Key Functionality**:
   - Supports MobileNetV2 and ResNet50 as backbones.
   - Projects features into a low-dimensional embedding space.
 - **Usage**: Import this script to define your model architecture.
 
-#### 8. `tripletmethod.py`
+#### 8. `triplet_method.py`
 - **Purpose**: Provides triplet loss and dataset classes for training models.
 - **Key Functionality**:
   - Implements the `TripletDataset` and `QueryDataset` for efficient data handling.
   - Defines triplet loss for optimizing embedding spaces.
 - **Usage**: Essential for training pipelines that use triplet loss.
 
-#### 9. `tripletprocess.py`
+#### 9. `triplet_process.py`
 - **Purpose**: Generates triplets for training and testing using identity labels.
 - **Key Functionality**:
   - Splits identities into train/test sets.
@@ -104,24 +103,12 @@ image-processing-project/
   - Generates query and gallery pairs for testing.
 - **Usage**: Use this script to prepare datasets for fine-tuning and evaluation.
 
-### Notebooks
-
-#### 1. `finetune_data_processing_example.ipynb`
-- **Purpose**: Demonstrates how to process data for training and testing.
-- **Key Functionality**: Walks through triplet generation and data preparation steps.
-- **Usage**: Reference this notebook to set up your data pipeline.
-
-#### 2. `finetune_models_example.ipynb`
-- **Purpose**: Provides an example of model fine-tuning.
-- **Key Functionality**: Demonstrates model training using triplet loss.
-- **Usage**: Modify and execute this notebook for your fine-tuning tasks.
-
-#### 3. `finetune_query_evaluate_example.ipynb`
-- **Purpose**: Shows query-based retrieval evaluation.
+#### 10. `finetuningPipeline.py`
+- **Purpose**: Combines the above scripts into a complete pipeline for pre-processing and fine-tuning.
 - **Key Functionality**:
-  - Loads pre-trained embeddings and models.
-  - Queries images and evaluates retrieval accuracy.
-- **Usage**: Use this notebook to understand the retrieval process and measure performance.
+  - Loads the CelebA dataset and pre-trained embeddings.
+  - Computes embeddings, generates triplets, and fine-tunes the model.
+- **Usage**: Run the script to fine-tune a model for face image retrieval.
 
 ## Notes
 - **Data Format**: Ensure that your dataset and embeddings follow the specified directory structure.

@@ -5,7 +5,7 @@ from sklearn.neighbors import KDTree
 import torch
 from torchvision.transforms import transforms
 from PIL import Image
-from retrievalmodels import RetrievalModel
+from fine_tuning.retrieval_models import RetrievalModel
 import numpy as np
 
 PARENT_DIRNAME = os.path.expanduser("~/image-processing-project/")
